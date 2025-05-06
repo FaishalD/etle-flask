@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ANPR Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      .result {
+        margin-top: 20px;
+      }
+      img {
+        max-width: 100%;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Uji Coba ANPR System</h1>
+
+      <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="file" accept="image/*" required />
+        <button type="submit">Deteksi Plat Nomor</button>
+      </form>
+
+      <div class="result" id="result">
+        <!-- Hasil akan muncul di sini -->
+      </div>
+    </div>
+
+    <script>
+      document
+        .getElementById("uploadForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const formData = new FormData();
+          formData.append("file", e.target.file.files[0]);
+
+          fetch("/detect", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              console.log(JSON.stringify(data));
+              const resultDiv = document.getElementById("result");
+
+              if (data.error) {
+                resultDiv.innerHTML = `<p style="color:red">Error: ${data.error}</p>`;
+              } else {
+                resultDiv.innerHTML = `
+                        <h3>Hasil Deteksi:</h3>
+                        <p><strong>Plat Nomor:</strong> ${data.license_plate}</p>
+                        <h4>Gambar Asli:</h4>
+                        <img src="/static/uploads/${data.original_image}">
+                        <h4>Plat Terdeteksi:</h4>
+                        <img src="/static/uploads/${data.plate_image}">
+                    `;
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+            });
+        });
+    </script>
+  </body>
+</html>
